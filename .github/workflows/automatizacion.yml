@@ -35,5 +35,4 @@ jobs:
             -Dsonar.projectKey=yataco01_juice-shop \
             -Dsonar.organization=yataco01 \
             -Dsonar.sources=. \
-            -Dsonar.host.url=https://sonarcloud.io \ 
-            -D"sonar.token=82f92794644537f324fbf9062f347242b5b8520a"
+            -Dsonar.host.url=https://sonarcloud.io \
