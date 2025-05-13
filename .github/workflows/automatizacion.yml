@@ -33,5 +33,5 @@ jobs:
             -X \
             -Dsonar.projectKey=yataco01-juice-shop \
             -Dsonar.sources=. \
-            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.host.url=http://host.docker.internal:9000 \
             -D"sonar.token=sqp_547e07773c44037da6d0e8ef5c08c63dbbdccaae"
