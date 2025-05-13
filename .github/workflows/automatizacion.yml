@@ -19,7 +19,7 @@ jobs:
 
       - name: Install SonarScanner CLI
         run: |
-          echo "📥 Descargando SonarScanner para análisis de Juice Shop"
+          echo "Descargando SonarScanner para análisis de Juice Shop"
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner-cli-5.0.1.3006-linux.zip
           sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
@@ -36,3 +36,8 @@ jobs:
             -Dsonar.organization=yataco01 \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
+
+      - name: Mostrar enlace al reporte SonarCloud
+        run: |
+          echo "✅ Escaneo completado. Puedes ver el reporte aquí:"
+          echo "🔗 https://sonarcloud.io/project/overview?id=yataco01_sonarscan"
