@@ -32,7 +32,7 @@ jobs:
           echo "🔍 Iniciando análisis SonarQube de OWASP Juice Shop en modo DEBUG (-X)"
           sonar-scanner \
             -X \
-            -Dsonar.projectKey=yataco01_juice-shop \
+            -Dsonar.projectKey=yataco01_sonarscan \
             -Dsonar.organization=yataco01 \
             -Dsonar.sources=. \
             -Dsonar.host.url=https://sonarcloud.io \
