@@ -21,19 +21,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: 🧪 Escanear sistema de archivos (proyecto)
+      - name: 🧪 Escanear sistema de archivos (código fuente)
         run: |
-          echo "Iniciando escaneo del código fuente con Trivy (fs)..."
+          echo "🔍 Escaneando el código fuente (fs)..."
           mkdir -p trivy-results
-          trivy fs . --format json --output trivy-results/fs-scan.json
-          trivy fs . --format table --output trivy-results/fs-scan.txt
+          trivy fs . --scanners vuln,secret,config \
+            --format json --output trivy-results/fs-scan.json
+          trivy fs . --scanners vuln,secret,config \
+            --format table --output trivy-results/fs-scan.txt
 
-      # (Opcional) Si usas Docker y quieres escanear una imagen
-      # - name: 🐳 Escanear imagen Docker
-      #   run: |
-      #     docker build -t juice-shop .
-      #     trivy image juice-shop --format json --output trivy-results/image-scan.json
+      - name: 🐳 Construir imagen Docker
+        run: |
+          echo "🔨 Construyendo imagen Docker..."
+          docker build -t juice-shop .
 
+      - name: 🔬 Escanear imagen Docker con Trivy
+        run: |
+          echo "🔍 Escaneando imagen Docker juice-shop..."
+          trivy image juice-shop \
+            --format json --output trivy-results/image-scan.json
+          trivy image juice-shop \
+            --format table --output trivy-results/image-scan.txt
+            
       - name: 💾 Subir reportes como artefactos
         uses: actions/upload-artifact@v4
         with:
