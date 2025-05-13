@@ -1,0 +1,41 @@
+name: Análisis de seguridad con Trivy
+
+on: [push]
+
+jobs:
+  trivy-scan:
+    name: Escaneo de seguridad con Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout del repositorio
+        uses: actions/checkout@v3
+
+      - name: 🔧 Instalar Trivy
+        run: |
+          echo "Instalando Trivy..."
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: 🧪 Escanear sistema de archivos (proyecto)
+        run: |
+          echo "Iniciando escaneo del código fuente con Trivy (fs)..."
+          mkdir -p trivy-results
+          trivy fs . --format json --output trivy-results/fs-scan.json
+          trivy fs . --format table --output trivy-results/fs-scan.txt
+
+      # (Opcional) Si usas Docker y quieres escanear una imagen
+      # - name: 🐳 Escanear imagen Docker
+      #   run: |
+      #     docker build -t juice-shop .
+      #     trivy image juice-shop --format json --output trivy-results/image-scan.json
+
+      - name: 💾 Subir reportes como artefactos
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-results/
