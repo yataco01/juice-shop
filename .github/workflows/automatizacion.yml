@@ -29,7 +29,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "🔍 Iniciando análisis SonarQube de OWASP Juice Shop en modo DEBUG (-X)"
+          echo "Iniciando análisis SonarQube de OWASP Juice Shop en modo DEBUG (-X)"
           sonar-scanner \
             -X \
             -Dsonar.projectKey=yataco01_sonarscan \
