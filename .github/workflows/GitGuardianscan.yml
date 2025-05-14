@@ -16,12 +16,8 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install --upgrade ggshield
 
-      - name: Run GitGuardian scan and check output
-        run: |
-          mkdir -p scan-report
-          ggshield secret scan repo . --all-policies --json | tee scan-report/gitguardian-report.json || true
-          echo "== Contenido del reporte =="
-          cat scan-report/gitguardian-report.json || echo "No se generó ningún reporte"
+      - name: Run GitGuardian scan on full repo
+        run: ggshield secret scan repo .
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
