@@ -3,21 +3,10 @@ name: Herramientas automatizadas
 on: [push]
 
 jobs:
-  sonarqube:
-    name: SonarQube Scan
+  herramientas:
+    name: Automatizacion
     runs-on: ubuntu-latest
     
-  trivy-scan:
-    name: Escaneo de seguridad con Trivy
-    runs-on: ubuntu-latest
-
-  secrets-scan:
-    name: GitGuardian Scan
-    runs-on: ubuntu-latest
-
-  zap_scan:
-    runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
