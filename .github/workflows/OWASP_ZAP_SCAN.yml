@@ -14,7 +14,7 @@ jobs:
       - name: Run ZAP scan against target
         run: |
           docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zap-baseline:latest \
-            -t "http://localhost:3000/#/" \
+            -t "https://juice-shop.herokuapp.com/#/" \
             -g gen.conf \
             -r zap-report.html || true
 
