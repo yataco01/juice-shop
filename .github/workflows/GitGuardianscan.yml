@@ -27,9 +27,31 @@ jobs:
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
-      - name: Upload GitGuardian report as artifact
+      - name: Convertir reporte GitGuardian a Markdown
+        run: |
+          sudo apt-get install -y jq
+          REPORT=scan-report/gitguardian-report.json
+          OUTPUT=scan-report/gitguardian-summary.md
+
+          echo "# 🛡️ GitGuardian Scan Summary" > $OUTPUT
+          echo "" >> $OUTPUT
+
+          if jq -e '.scans[].entities_with_incidents[] | select(.total_incidents > 0)' "$REPORT" > /dev/null; then
+            jq -r '.scans[].entities_with_incidents[] |
+              select(.total_incidents > 0) |
+              "- Archivo: \(.filename)\n  - Incidentes: \(.total_incidents)\n"' "$REPORT" >> "$OUTPUT"
+          else
+            echo "✅ No se encontraron secretos." >> "$OUTPUT"
+          fi
+
+      - name: Upload GitGuardian JSON report
         uses: actions/upload-artifact@v4
         with:
           name: gitguardian-report
           path: scan-report/gitguardian-report.json
 
+      - name: Upload GitGuardian Markdown summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitguardian-summary
+          path: scan-report/gitguardian-summary.md
