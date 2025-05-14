@@ -34,7 +34,7 @@ jobs:
           REPORT=scan-report/gitguardian-report.json
           OUTPUT=scan-report/gitguardian-first-incident.md
       
-          echo "# 🧪 Primer incidente detectado por GitGuardian" > $OUTPUT
+          echo "# Incidentes detectados por GitGuardian" > $OUTPUT
           echo "" >> $OUTPUT
       
           jq '.scans[].entities_with_incidents[] | select(.total_incidents > 0) | .incidents[0]' "$REPORT" >> $OUTPUT
