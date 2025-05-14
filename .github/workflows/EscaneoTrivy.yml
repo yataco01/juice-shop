@@ -21,7 +21,7 @@ jobs:
 
       - name: Escanear sistema de archivos (código fuente)
         run: |
-          echo "🔍 Escaneando el código fuente (fs)..."
+          echo "Escaneando el código fuente (fs)..."
           mkdir -p trivy-results
           trivy fs . --scanners vuln,secret,config \
             --format json --output trivy-results/fs-scan.json
