@@ -15,6 +15,15 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip install --upgrade ggshield
+          
+      - name: Run GitGuardian scan on full repo and generate report
+        run: |
+          # Crear el directorio para guardar el reporte
+          mkdir -p scan-report
+          # Ejecutar el escaneo y guardar el reporte en formato JSON
+          ggshield secret scan repo . --json > scan-report/gitguardian-report.json || true
+          echo "== Contenido del reporte generado =="
+          cat scan-report/gitguardian-report.json || echo "No se generó ningún reporte"
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
@@ -25,7 +34,7 @@ jobs:
           REPORT=scan-report/gitguardian-report.json
           OUTPUT=scan-report/gitguardian-first-incident.md
       
-          echo "# 🧪 Incidentes detectados por GitGuardian" > $OUTPUT
+          echo "# 🧪 Primer incidente detectado por GitGuardian" > $OUTPUT
           echo "" >> $OUTPUT
       
           jq '.scans[].entities_with_incidents[] | select(.total_incidents > 0) | .incidents[0]' "$REPORT" >> $OUTPUT
