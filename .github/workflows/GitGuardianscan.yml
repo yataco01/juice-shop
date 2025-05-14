@@ -32,24 +32,30 @@ jobs:
           sudo apt-get install -y jq
           REPORT=scan-report/gitguardian-report.json
           OUTPUT=scan-report/gitguardian-summary.md
-
+      
           echo "# 🛡️ GitGuardian Scan Summary" > $OUTPUT
           echo "" >> $OUTPUT
-
+      
           if jq -e '.scans[].entities_with_incidents[] | select(.total_incidents > 0)' "$REPORT" > /dev/null; then
-            jq -r '.scans[].entities_with_incidents[] |
+            jq -r '
+              .scans[].entities_with_incidents[] |
               select(.total_incidents > 0) |
-              "- Archivo: \(.filename)\n  - Incidentes: \(.total_incidents)\n"' "$REPORT" >> "$OUTPUT"
-          else
-            echo "✅ No se encontraron secretos." >> "$OUTPUT"
-          fi
-
-      - name: Upload GitGuardian JSON report
-        uses: actions/upload-artifact@v4
-        with:
-          name: gitguardian-report
-          path: scan-report/gitguardian-report.json
-
+              {
+                filename: .filename,
+                total: .total_incidents,
+                severities: (.incidents | map(.severity) | unique | join(", ")),
+                descriptions: (.incidents | map(.policy_break.name) | unique)
+              } |
+              "- Archivo: \(.filename)
+          - Incidentes: \(.total)
+          - Severidades: \(.severities)
+          - Descripciones:\n" +
+                (.descriptions | map("    - " + .) | join("\n"))
+              ' "$REPORT" >> "$OUTPUT"
+            else
+              echo "✅ No se encontraron secretos." >> "$OUTPUT"
+            fi
+            
       - name: Upload GitGuardian Markdown summary
         uses: actions/upload-artifact@v4
         with:
