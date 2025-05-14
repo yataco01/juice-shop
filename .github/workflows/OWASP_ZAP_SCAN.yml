@@ -1,6 +1,5 @@
 name: OWASP ZAP Scan
 
-on: [push]
 
 jobs:
   zap_scan:
