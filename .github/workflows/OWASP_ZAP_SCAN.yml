@@ -11,15 +11,25 @@ jobs:
       - name: OWASP ZAP Baseline Scan
         uses: actions/checkout@v3
 
-      - name: Run ZAP scan against target
+      - name: Install OWASP ZAP
         run: |
-          docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zap-baseline:latest \
-            -t "https://juice-shop.herokuapp.com/#/" \
-            -g gen.conf \
-            -r zap-report.html || true
+          sudo apt-get update
+          sudo apt-get install -y zaproxy
+          pip install zap-cli
 
-      - name: Subir reporte como artefacto
+      # 3. Definir la URL del objetivo (la URL de tu aplicación)
+      - name: Set target URL
+        run: |
+          echo "TARGET_URL=https://juice-shop.herokuapp.com/#/" >> $GITHUB_ENV  # Cambia esta URL al objetivo real
+
+      # 4. Escanear con OWASP ZAP
+      - name: Run OWASP ZAP scan
+        run: |
+          zap-cli quick-scan --url $TARGET_URL
+
+      # 5. Subir los resultados del escaneo
+      - name: Upload ZAP Report as Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: zap-html-report
-          path: zap-report.html
+          name: zap-report
+          path: zap_report.html
