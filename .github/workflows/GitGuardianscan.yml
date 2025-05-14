@@ -19,7 +19,7 @@ jobs:
       - name: Run GitGuardian deep scan and save report
         run: |
           mkdir -p scan-report
-          ggshield secret scan repo . \
+          ggshield secret scan commit-range --all --json \
             --all-policies \
             --verbose \
             --json > scan-report/gitguardian-report.json || true
