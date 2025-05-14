@@ -6,6 +6,17 @@ jobs:
   sonarqube:
     name: SonarQube Scan
     runs-on: ubuntu-latest
+    
+  trivy-scan:
+    name: Escaneo de seguridad con Trivy
+    runs-on: ubuntu-latest
+
+  secrets-scan:
+    name: GitGuardian Scan
+    runs-on: ubuntu-latest
+
+  zap_scan:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -41,3 +52,98 @@ jobs:
         run: |
           echo "✅ Escaneo completado. Puedes ver el reporte aquí:"
           echo "🔗 https://sonarcloud.io/project/overview?id=yataco01_sonarscan"
+
+
+      - name: Instalar Trivy
+        run: |
+          echo "Instalando Trivy..."
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Escanear sistema de archivos (código fuente)
+        run: |
+          echo "🔍 Escaneando el código fuente (fs)..."
+          mkdir -p trivy-results
+          trivy fs . --scanners vuln,secret,config \
+            --format json --output trivy-results/fs-scan.json
+          trivy fs . --scanners vuln,secret,config \
+            --format table --output trivy-results/fs-scan.txt
+
+      - name: Construir imagen Docker
+        run: |
+          echo "Construyendo imagen Docker..."
+          docker build -t juice-shop .
+
+      - name: Escanear imagen Docker con Trivy
+        run: |
+          echo "Escaneando imagen Docker juice-shop..."
+          trivy image juice-shop \
+            --format json --output trivy-results/image-scan.json
+          trivy image juice-shop \
+            --format table --output trivy-results/image-scan.txt
+            
+      - name: Subir reportes como artefactos
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-results/
+
+
+      - name: Install pip and ggshield (latest)
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install --upgrade ggshield
+          
+      - name: Run GitGuardian scan on full repo and generate report
+        run: |
+          # Crear el directorio para guardar el reporte
+          mkdir -p scan-report
+          # Ejecutar el escaneo y guardar el reporte en formato JSON
+          ggshield secret scan repo . --json > scan-report/gitguardian-report.json || true
+          echo "== Contenido del reporte generado =="
+          cat scan-report/gitguardian-report.json || echo "No se generó ningún reporte"
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+      - name: Exportar el primer incidente encontrado
+        run: |
+          sudo apt-get install -y jq
+          mkdir -p scan-report
+          REPORT=scan-report/gitguardian-report.json
+          OUTPUT=scan-report/gitguardian-first-incident.md
+      
+          echo "# Incidentes detectados por GitGuardian" > $OUTPUT
+          echo "" >> $OUTPUT
+      
+          jq '.scans[].entities_with_incidents[] | select(.total_incidents > 0) | .incidents[0]' "$REPORT" >> $OUTPUT
+                        
+      - name: Subir incidente como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitguardian-first-incident
+          path: scan-report/gitguardian-first-incident.md
+
+      - name: Run OWASP ZAP Full Scan
+        run: |
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:latest zap-full-scan.py \
+            -t https://juice-shop.herokuapp.com \
+            -r full_zap_report.html \
+            -x full_zap_report.xml \
+            -I
+
+      - name: Upload ZAP HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Full ZAP HTML Report
+          path: full_zap_report.html
+
+      - name: Upload ZAP XML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Full ZAP XML Report
+          path: full_zap_report.xml
+
