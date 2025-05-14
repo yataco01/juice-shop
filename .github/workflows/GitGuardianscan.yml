@@ -24,3 +24,9 @@ jobs:
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
+      - name: Upload GitGuardian report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitguardian-report
+          path: scan-report/gitguardian-report.json
+
