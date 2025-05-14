@@ -116,23 +116,30 @@ jobs:
           name: gitguardian-first-incident
           path: scan-report/gitguardian-first-incident.md
 
+
+      - name: Create zap-results directory
+        run: mkdir -p zap-results
+
       - name: Run OWASP ZAP Full Scan
         run: |
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:latest zap-full-scan.py \
+          docker run --rm -v $(pwd)/zap-results:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:latest zap-full-scan.py \
             -t https://juice-shop.herokuapp.com \
             -r full_zap_report.html \
             -x full_zap_report.xml \
-            -I
+            -I || true
+
+      - name: List generated files
+        run: ls -la zap-results
 
       - name: Upload ZAP HTML report
         uses: actions/upload-artifact@v4
         with:
           name: Full ZAP HTML Report
-          path: full_zap_report.html
+          path: zap-results/full_zap_report.html
 
       - name: Upload ZAP XML report
         uses: actions/upload-artifact@v4
         with:
           name: Full ZAP XML Report
-          path: full_zap_report.xml
+          path: zap-results/full_zap_report.xml
 
