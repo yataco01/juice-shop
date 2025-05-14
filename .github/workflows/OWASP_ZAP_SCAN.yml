@@ -3,50 +3,18 @@ name: OWASP ZAP Scan
 on: [push]
 
 jobs:
-  zap-scan:
-    name: Run ZAP Baseline Scan
+  zap_scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: OWASP ZAP Baseline Scan
-        uses: actions/checkout@v3
-
-      - name: Install Java
+      - name: Scan target with ZAP baseline scan
         run: |
-          sudo apt-get update
-          sudo apt-get install -y openjdk-11-jre
+          docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
+            -t https://juice-shop.herokuapp.com/#/ \
+            -r zap_report.html
 
-      # Descargar e instalar ZAP
-      - name: Install OWASP ZAP
-        run: |
-          wget https://github.com/zaproxy/zaproxy/releases/download/v2.15.0/ZAP_2.15.0_Linux.tar.gz
-          tar -xzf ZAP_2.15.0_Linux.tar.gz
-          sudo mv ZAP_2.15.0 /opt/zaproxy
-          sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap
-
-      # Instalar zap-cli
-      - name: Install zap-cli
-        run: |
-          pip install zapcli
-
-      # Definir la URL objetivo (cambia esto a tu URL real)
-      - name: Set target URL
-        run: echo "TARGET_URL=https://juice-shop.herokuapp.com/#/" >> $GITHUB_ENV
-
-      # Ejecutar escaneo con zap-cli
-      - name: Run OWASP ZAP scan
-        run: |
-          zap-cli --zap-path /opt/zaproxy/zap.sh start
-          zap-cli --zap-path /opt/zaproxy/zap.sh status -t 60
-          zap-cli --zap-path /opt/zaproxy/zap.sh open-url $TARGET_URL
-          zap-cli --zap-path /opt/zaproxy/zap.sh spider $TARGET_URL
-          zap-cli --zap-path /opt/zaproxy/zap.sh active-scan $TARGET_URL
-          zap-cli --zap-path /opt/zaproxy/zap.sh report -o zap_report.html -f html
-          zap-cli --zap-path /opt/zaproxy/zap.sh stop
-
-      # Subir el reporte generado
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v2
         with:
-          name: zap-report
+          name: zap-html-report
           path: zap_report.html
