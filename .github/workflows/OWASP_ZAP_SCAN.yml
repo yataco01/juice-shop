@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Run OWASP ZAP Full Scan
         run: |
-          docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py \
+          docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:latest zap-full-scan.py \
             -t https://juice-shop.herokuapp.com \
             -r full_zap_report.html \
             -x full_zap_report.xml \
