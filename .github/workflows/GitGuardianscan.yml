@@ -16,11 +16,15 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install --upgrade ggshield
 
-      - name: Run GitGuardian scan and handle result
+      - name: Run GitGuardian deep scan and save report
         run: |
-          if ! ggshield secret scan repo .; then
-            echo "::warning title=GitGuardian::Se detectaron secretos, pero el flujo continuará."
-          fi
+          mkdir -p scan-report
+          ggshield secret scan repo . \
+            --all-policies \
+            --verbose \
+            --json > scan-report/gitguardian-report.json || true
+          echo "== Archivos en scan-report =="
+          ls -l scan-report
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
