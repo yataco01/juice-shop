@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout del repositorio
+      - name: Checkout del repositorio
         uses: actions/checkout@v3
 
-      - name: 🔧 Instalar Trivy
+      - name: Instalar Trivy
         run: |
           echo "Instalando Trivy..."
           sudo apt-get update
@@ -21,7 +21,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: 🧪 Escanear sistema de archivos (código fuente)
+      - name: Escanear sistema de archivos (código fuente)
         run: |
           echo "🔍 Escaneando el código fuente (fs)..."
           mkdir -p trivy-results
@@ -30,20 +30,20 @@ jobs:
           trivy fs . --scanners vuln,secret,config \
             --format table --output trivy-results/fs-scan.txt
 
-      - name: 🐳 Construir imagen Docker
+      - name: Construir imagen Docker
         run: |
-          echo "🔨 Construyendo imagen Docker..."
+          echo "Construyendo imagen Docker..."
           docker build -t juice-shop .
 
-      - name: 🔬 Escanear imagen Docker con Trivy
+      - name: Escanear imagen Docker con Trivy
         run: |
-          echo "🔍 Escaneando imagen Docker juice-shop..."
+          echo "Escaneando imagen Docker juice-shop..."
           trivy image juice-shop \
             --format json --output trivy-results/image-scan.json
           trivy image juice-shop \
             --format table --output trivy-results/image-scan.txt
             
-      - name: 💾 Subir reportes como artefactos
+      - name: Subir reportes como artefactos
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
