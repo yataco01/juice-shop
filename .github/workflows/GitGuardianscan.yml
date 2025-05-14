@@ -43,12 +43,12 @@ jobs:
               {
                 filename: .filename,
                 total: .total_incidents,
-                severities: (.incidents | map(.severity) | unique | join(", ")),
+                severities: (.incidents | map(.policy_break.severity) | unique | join(", ")),
                 descriptions: (.incidents | map(.policy_break.name) | unique)
               } |
               "- Archivo: \(.filename)
           - Incidentes: \(.total)
-          - Severidades: \(.severities)
+          - Severidades: \(.severities // "N/A")
           - Descripciones:\n" +
                 (.descriptions | map("    - " + .) | join("\n"))
               ' "$REPORT" >> "$OUTPUT"
