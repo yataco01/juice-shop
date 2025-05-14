@@ -37,25 +37,25 @@ jobs:
           echo "" >> $OUTPUT
       
           if jq -e '.scans[].entities_with_incidents[] | select(.total_incidents > 0)' "$REPORT" > /dev/null; then
-            jq -r '
-              .scans[].entities_with_incidents[] |
-              select(.total_incidents > 0) |
+            jq -r '.scans[].entities_with_incidents[] | select(.total_incidents > 0) |
               {
                 filename: .filename,
                 total: .total_incidents,
                 severities: (.incidents | map(.policy_break.severity) | unique | join(", ")),
                 descriptions: (.incidents | map(.policy_break.name) | unique)
-              } |
-              "- Archivo: \(.filename)
+              } | 
+          - Archivo: \(.filename)
           - Incidentes: \(.total)
           - Severidades: \(.severities // "N/A")
-          - Descripciones:\n" +
-                (.descriptions | map("    - " + .) | join("\n"))
-              ' "$REPORT" >> "$OUTPUT"
+          - Descripciones: \n" + (.descriptions | map("    - " + .) | join("\n")) ' "$REPORT" >> "$OUTPUT"
             else
               echo "✅ No se encontraron secretos." >> "$OUTPUT"
             fi
-            
+    
+      - name: Imprimir estructura real del primer incidente
+        run: |
+          jq '.scans[].entities_with_incidents[] | select(.total_incidents > 0) | .incidents[0]' scan-report/gitguardian-report.json
+                  
       - name: Upload GitGuardian Markdown summary
         uses: actions/upload-artifact@v4
         with:
