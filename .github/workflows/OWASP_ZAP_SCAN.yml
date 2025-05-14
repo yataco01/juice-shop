@@ -11,28 +11,41 @@ jobs:
       - name: OWASP ZAP Baseline Scan
         uses: actions/checkout@v3
 
-     # 2. Instalar OWASP ZAP usando el script oficial
-      - name: Install OWASP ZAP
+      - name: Install Java
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jre
+
+      # Descargar e instalar ZAP
+      - name: Install OWASP ZAP
+        run: |
           wget https://github.com/zaproxy/zaproxy/releases/download/v2.15.0/ZAP_2.15.0_Linux.tar.gz
-          tar -xvzf ZAP_2.15.0_Linux.tar.gz
+          tar -xzf ZAP_2.15.0_Linux.tar.gz
           sudo mv ZAP_2.15.0 /opt/zaproxy
           sudo ln -s /opt/zaproxy/zap.sh /usr/local/bin/zap
 
-      # 3. Definir la URL del objetivo
-      - name: Set target URL
+      # Instalar zap-cli
+      - name: Install zap-cli
         run: |
-          echo "TARGET_URL=https://juice-shop.herokuapp.com/#/" >> $GITHUB_ENV  # Cambia esta URL al objetivo real
+          pip install zapcli
 
-      # 4. Escanear con OWASP ZAP
+      # Definir la URL objetivo (cambia esto a tu URL real)
+      - name: Set target URL
+        run: echo "TARGET_URL=https://juice-shop.herokuapp.com/#/" >> $GITHUB_ENV
+
+      # Ejecutar escaneo con zap-cli
       - name: Run OWASP ZAP scan
         run: |
-          zap-cli quick-scan --url $TARGET_URL
+          zap-cli --zap-path /opt/zaproxy/zap.sh start
+          zap-cli --zap-path /opt/zaproxy/zap.sh status -t 60
+          zap-cli --zap-path /opt/zaproxy/zap.sh open-url $TARGET_URL
+          zap-cli --zap-path /opt/zaproxy/zap.sh spider $TARGET_URL
+          zap-cli --zap-path /opt/zaproxy/zap.sh active-scan $TARGET_URL
+          zap-cli --zap-path /opt/zaproxy/zap.sh report -o zap_report.html -f html
+          zap-cli --zap-path /opt/zaproxy/zap.sh stop
 
-      # 5. Subir los resultados del escaneo
-      - name: Upload ZAP Report as Artifacts
+      # Subir el reporte generado
+      - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
