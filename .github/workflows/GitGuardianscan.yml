@@ -1,6 +1,5 @@
 name: GitGuardian Secrets Scan
 
-on: [push]
 
 jobs:
   secrets-scan:
